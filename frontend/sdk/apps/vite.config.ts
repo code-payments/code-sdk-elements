@@ -1,0 +1,58 @@
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+const path = require('path')
+
+require('dotenv').config()
+
+let env = {} as { WS_PATH: string, HTTP_PATH: string };
+if (process.env.NODE_ENV === 'production') {
+  console.warn('Using production environment');
+  env = {
+    WS_PATH: 'wss://cash.getcode.com',
+    HTTP_PATH: 'https://cash.getcode.com',
+  }
+} else {
+  console.warn('Using dev environment');
+  env = {
+    WS_PATH: 'ws://localhost:3000',
+    HTTP_PATH: 'http://localhost:3000',
+  };
+}
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  base: '/v1/elements/',
+  plugins: [
+    vue(),
+  ],
+  root: path.resolve(__dirname, './'),
+  resolve: {
+    alias: {
+      crypto: 'crypto-browserify',
+      process: "process/browser",
+      stream: "stream-browserify",
+      zlib: "browserify-zlib",
+    },
+  },
+  define: {
+    'process.env': env,
+    'process.browser': true,
+    'global': {}
+  },
+  build: {
+    chunkSizeWarningLimit: 1600,
+    outDir: path.resolve(__dirname, './dist'),
+    emptyOutDir: true,
+
+    rollupOptions: {
+      input: {
+        'button': path.resolve(__dirname, 'payment-request-button', 'index.html'),
+        'modal-desktop': path.resolve(__dirname, 'payment-request-modal-desktop', 'index.html'),
+        'modal-mobile': path.resolve(__dirname, 'payment-request-modal-mobile', 'index.html'),
+      }
+    }
+  },
+  server: {
+    port: 8740,
+  },
+})
