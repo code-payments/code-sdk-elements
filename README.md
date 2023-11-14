@@ -1,6 +1,8 @@
 # code-sdk-elements
 This repository contains the front-end components for the Code SDK [elements](https://www.npmjs.com/package/@code-wallet/elements) package. To learn more about the SDK, please visit [sdk.getcode.com](https://sdk.getcode.com).
 
+<img width="50%" src="https://github.com/code-wallet/code-sdk-elements/assets/623790/5453a69d-d81a-448e-8edf-9345568fbf82">
+
 ## Development
 The codebase is split into the following packages:
 
