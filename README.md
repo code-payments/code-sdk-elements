@@ -1,20 +1,20 @@
 
-![Code SDK](https://github.com/code-wallet/code-sdk-elements/assets/623790/a810b617-e911-4898-8d07-835a3d6874cd)
+![code_sdk_elements](https://github.com/code-wallet/code-sdk-elements/assets/623790/4baf6b4c-2e96-4d0a-b32b-eaf193704565)
 
 # Code SDK Elements
-This repository contains the front-end components for the Code SDK [elements](https://www.npmjs.com/package/@code-wallet/elements) package. To learn more about the SDK, please visit [sdk.getcode.com](https://sdk.getcode.com).
+This repository contains the frontend components for the Code SDK [elements](https://www.npmjs.com/package/@code-wallet/elements) package. To learn more about the SDK, please visit [sdk.getcode.com](https://sdk.getcode.com).
 
 
 ## Development
 The codebase is split into the following packages:
 
 * `frontend` - A Vue codebase for rendering the individual SDK elements. The codebase includes all logic necessary to generate a send intent against the Code Sequencer. Including things like the GRPC protocol, the KikCode, and the send intent.
-* `kikcode` - A C++ library for rendering KikCodes. This library is compiled to WASM and wrapped in a JS library for use in the front-end.
+* `kikcode` - A C++ library for rendering KikCodes. This library is compiled to WASM and wrapped in a JS library for use in the frontend.
 
 The elements in this project are exposed as iframe components through the SDK. The elements are not intended to be used directly in a web application. Instead, they should be used through the SDK. The SDK handles the complex setup and communication channels between the elements the developer SDK.
 
 ## Quick Start
-Each package has its own `Makefile`, which can be used to build and run the package. Additionally, you can run each package in a Docker container. Use `npm run dev` to run the local development environment both the front-end and back-end.
+Each package has its own `Makefile`, which can be used to build and run the package. Additionally, you can run each package in a Docker container. Use `npm run dev` to run the local development environment both the frontend and backend.
 
 <img width="50%" src="https://github.com/code-wallet/code-sdk-elements/assets/623790/5453a69d-d81a-448e-8edf-9345568fbf82">
 
