@@ -1,7 +1,9 @@
+
+![Code SDK](https://github.com/code-wallet/code-sdk-elements/assets/623790/a810b617-e911-4898-8d07-835a3d6874cd)
+
 # code-sdk-elements
 This repository contains the front-end components for the Code SDK [elements](https://www.npmjs.com/package/@code-wallet/elements) package. To learn more about the SDK, please visit [sdk.getcode.com](https://sdk.getcode.com).
 
-<img width="50%" src="https://github.com/code-wallet/code-sdk-elements/assets/623790/5453a69d-d81a-448e-8edf-9345568fbf82">
 
 ## Development
 The codebase is split into the following packages:
@@ -13,6 +15,8 @@ The elements in this project are exposed as iframe components through the SDK. T
 
 ## Quick Start
 Each package has its own `Makefile`, which can be used to build and run the package. Additionally, you can run each package in a Docker container. Use `npm run dev` to run the local development environment both the front-end and back-end.
+
+<img width="50%" src="https://github.com/code-wallet/code-sdk-elements/assets/623790/5453a69d-d81a-448e-8edf-9345568fbf82">
 
 ## Getting Help
 
