@@ -1,7 +1,7 @@
 {
   "name": "@code/sdk-elements",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.1.0",
   "main": "./dist/code.umd.js",
   "module": "./dist/code.mjs",
   "typings": "./dist/index.d.ts",
