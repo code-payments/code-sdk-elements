@@ -2,7 +2,7 @@ import { useConfig } from '../config';
 import { Kik } from './';
 
 import { EventChannel, InternalCardEvents, InternalEvents } from "@code-wallet/events";
-import { PaymentRequestIntent, decode, encode } from "@code-wallet/library";
+import { PaymentRequestIntent, decode, encode, PublicKey } from "@code-wallet/library";
 import * as proto from '@code-wallet/rpc';
 
 class PaymentRequest {
@@ -113,16 +113,52 @@ class PaymentRequest {
         await this.listen();
     }
 
+    private async getStatus() : Promise<proto.GetStatusResponse | undefined> {
+        const config = useConfig();
+        const getStatus = await proto.RpcStream.createUnaryMethod(proto.MicroPayment, "getStatus", config.wsPath());
+        try {
+            const intentId = PublicKey.fromBase58(this.intent.getIntentId());
+            const res = await getStatus(new proto.GetStatusRequest({
+                intentId: {
+                    value: intentId.toBuffer(),
+                },
+            }));
+            return res;
+        } catch (error) {
+            if (this.emitter) {
+                this.emitter.emit("error", error as any);
+            }
+        }
+    }
+
+    private async sendRequest() : Promise<proto.SendMessageResponse | undefined> {
+        const config = useConfig();
+        const req = await this.toProto();
+        const msgSend = await proto.RpcStream.createUnaryMethod(proto.Messaging, "sendMessage", config.wsPath());
+        try {
+            const res = await msgSend(req);
+            if (res.result == proto.SendMessageResponse_Result.OK) {
+                return res;
+            } else {
+                if (this.emitter) {
+                    this.emitter.emit("error", { message: "Failed to send message" });
+                }
+            }
+        } catch (error) {
+            if (this.emitter) {
+                this.emitter.emit("error", error as any);
+            }
+        }
+    }
+
     private async listen() {
         if (!this.emitter) { return; }
 
         const { rendezvousKeypair } = this.intent;
         const config = useConfig();
-        const req = await this.toProto();
 
         await this.generateKikCode();
 
-        const msgSend = await proto.RpcStream.createUnaryMethod(proto.Messaging, "sendMessage", config.wsPath());
         const msgStream = await proto.RpcStream.create(proto.Messaging, "openMessageStream", config.wsPath(), {
             onClose: () => {
                 if (this.emitter) {
@@ -136,21 +172,21 @@ class PaymentRequest {
             },
         });
 
-        try {
-            const res = await msgSend(req);
-            if (res.result != proto.SendMessageResponse_Result.OK) {
-                if (this.emitter) {
-                    this.emitter.emit("error", { message: "Failed to send message" });
-                }
-                return;
-            }
-        } catch (error) {
-            if (this.emitter) {
-                this.emitter.emit("error", error as any);
-            }
-            return;
+        // Get the status of the intent (in case the server already requested it)
+        const status = await this.getStatus();
+        if (!status) {
+            return; // Something went wrong, don't continue
         }
 
+        // If the intent does not exist, send the initial request here
+        if (!status.exists) {
+            const res = await this.sendRequest();
+            if (!res) {
+                return; // Something went wrong, don't continue
+            }
+        }
+
+        // Open the message stream
         msgStream.write(new proto.OpenMessageStreamRequest({
             rendezvousKey: new proto.RendezvousKey({
                 value: rendezvousKeypair.publicKey,
