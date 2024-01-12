@@ -38,7 +38,12 @@ class PaymentRequest {
             opts.clientSecret = this.intent.getClientSecret();
         }
 
-        return encode(opts);
+        const payload = encode(opts);
+
+        // Adding a console.log here to make it easier to debug mobile issues
+        console.log("code-payments:", payload);
+
+        return payload;
     }
 
     static fromPayload(val: string, opt: { 
