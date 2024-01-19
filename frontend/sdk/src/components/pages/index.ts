@@ -4,4 +4,3 @@ export { default as PaymentRequestModalMobile } from './PaymentRequestModalMobil
 export { default as LoginRequestButton } from './LoginRequestButton.vue';
 export { default as LoginRequestModalDesktop } from './LoginRequestModalDesktop.vue';
 export { default as LoginRequestModalMobile } from './LoginRequestModalMobile.vue';
-export { default as LoginRequestModalMobile2 } from './LoginRequestModalMobile2.vue';
