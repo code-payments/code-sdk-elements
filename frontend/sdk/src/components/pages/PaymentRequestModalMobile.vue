@@ -196,7 +196,7 @@ onUnmounted(() => {
 
                       <div class="delay-show-1 pb-10">
                         <div class="pb-5 text-white text-[28px] text-center leading-tight
-                          tracking-tighter font-medium">Use the Code Wallet app to purchase for 
+                          tracking-tighter font-medium">Use Code App to Purchase for 
                           {{ formatCurrency(paymentRequest.getAmount()!, paymentRequest.getCurrency()!) }}
                         </div>
 
@@ -243,18 +243,6 @@ onUnmounted(() => {
                   </div>
 
                 </DialogPanel>
-
-                <span v-if="false" 
-                  class="scale-75 bottom-2 left-2 origin-left truncate text-xs block text-left p-2 text-red-500 absolute z-10 bg-black mt-10">
-                  <span class="text-white font-bold underline">debug info</span><br>
-                  <span class="text-white font-bold">IS_WAITING:</span> {{ isLoading }}<br>
-                  <span class="text-white">RENDEZVOUS:</span> {{ paymentRequest.intent.getIntentId() }}<br>
-                  <span class="text-white">AMOUNT:</span> {{ paymentRequest.getAmount() }}<br>
-                  <span class="text-white">CURRENCY:</span> {{ paymentRequest.getCurrency() }}<br>
-                  <span class="text-white">DESTINATION:</span> {{ paymentRequest.getDestination() }}<br>
-                  <span class="text-white">CLIENT SECRET:</span> {{ clientSecret }}<br>
-                  <span class="text-white">IDEMPOTENCY KEY:</span> {{ idempotencyKey }}<br>
-                </span>
 
               </div>
             </TransitionChild>

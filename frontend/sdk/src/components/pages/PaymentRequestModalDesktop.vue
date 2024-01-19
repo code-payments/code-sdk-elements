@@ -2,7 +2,7 @@
 import { Ref, onMounted, onUnmounted, ref } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { CodeRequest, CodeSpinner, DownloadAppQR, ErrorMessage } from '../elements';
+import { CodeRequestPayment, CodeSpinner, DownloadAppQR, ErrorMessage } from '../elements';
 import { PaymentRequest, formatCurrency } from "../../utils"
 import { EventChannel, InternalEvents } from "@code-wallet/events";
 
@@ -154,7 +154,7 @@ onUnmounted(() => {
                       <div v-else class="delay-500">
                         <h2 class="text-white text-[34px] leading-tight
                         font-avenir-next-bold mb-10">
-                          Scan with the Code app to pay
+                          Scan with Code App to Pay
                           {{ formatCurrency(paymentRequest.getAmount()!, paymentRequest.getCurrency()!) }}
                         </h2>
 
@@ -170,7 +170,7 @@ onUnmounted(() => {
 
                           <div v-show="!isLoading" class="mv-left-start delay-800"
                             :class="{ 'invisible': hasScanned, 'mv-left-end': showDownloadQr, }">
-                            <CodeRequest 
+                            <CodeRequestPayment
                               :payload="paymentRequest.kikCode" 
                               :amount="paymentRequest.intent.options.amount" 
                               :currency="paymentRequest.intent.options.currency"

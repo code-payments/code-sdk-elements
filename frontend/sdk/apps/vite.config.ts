@@ -46,9 +46,12 @@ export default defineConfig({
 
     rollupOptions: {
       input: {
-        'button': path.resolve(__dirname, 'payment-request-button', 'index.html'),
-        'modal-desktop': path.resolve(__dirname, 'payment-request-modal-desktop', 'index.html'),
-        'modal-mobile': path.resolve(__dirname, 'payment-request-modal-mobile', 'index.html'),
+        'payment-button': path.resolve(__dirname, 'payment-request-button', 'index.html'),
+        'payment-modal-desktop': path.resolve(__dirname, 'payment-request-modal-desktop', 'index.html'),
+        'payment-modal-mobile': path.resolve(__dirname, 'payment-request-modal-mobile', 'index.html'),
+        'login-button': path.resolve(__dirname, 'login-request-button', 'index.html'),
+        'login-modal-desktop': path.resolve(__dirname, 'login-request-modal-desktop', 'index.html'),
+        'login-modal-mobile': path.resolve(__dirname, 'login-request-modal-mobile', 'index.html'),
       }
     }
   },

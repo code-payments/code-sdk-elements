@@ -1,30 +1,38 @@
-import { useConfig } from '../config';
-import { Kik } from './';
-
+import { useConfig } from '../../config';
+import { Kik } from '../';
 import { EventChannel, InternalCardEvents, InternalEvents } from "@code-wallet/events";
-import { PaymentRequestIntent, decode, encode, PublicKey } from "@code-wallet/library";
+import { decode, encode, PublicKey, Intent } from "@code-wallet/library";
 import * as proto from '@code-wallet/rpc';
 
-class PaymentRequest {
+export interface CodeRequest {
     emitter: EventChannel<InternalEvents> | null;
-    intent: PaymentRequestIntent;
+    intent: Intent;
+    kikCode?: Uint8Array;
+
+    generateKikCode(): Promise<void>;
+    toPayload(): string;
+    toProto(): Promise<proto.SendMessageRequest>;
+    openStream(emitter: EventChannel<InternalEvents>): Promise<void>;
+    closeStream(): void;
+}
+
+export type CodeRequestFromPayload = (
+    payload: string, 
+    options?: { 
+        clientSecret?: string; 
+        idempotencyKey?: string; 
+        successUrl?: string; 
+        cancelUrl?: string; 
+    }) => CodeRequest;
+
+abstract class AbstractRequest implements CodeRequest {
+    emitter: EventChannel<InternalEvents> | null;
+    intent: Intent;
     kikCode?: Uint8Array
 
-    constructor(intent: PaymentRequestIntent) {
+    constructor(intent: Intent) {
         this.intent = intent;
         this.emitter = null;
-    }
-
-    getAmount() {
-        return this.intent.options.amount;
-    }
-
-    getCurrency() {
-        return this.intent.options.currency;
-    }
-
-    getDestination() {
-        return this.intent.options.destination;
     }
 
     async generateKikCode() {
@@ -39,14 +47,10 @@ class PaymentRequest {
         }
 
         const payload = encode(opts);
-
-        // Adding a console.log here to make it easier to debug mobile issues
-        console.log("code-payments:", payload);
-
         return payload;
     }
 
-    static fromPayload(val: string, opt: { 
+    static bodyFromPayload(val: string, opt: { 
         clientSecret?: string,
         idempotencyKey?: string,
         successUrl?: string,
@@ -82,32 +86,10 @@ class PaymentRequest {
             }
         }
 
-        const intent = new PaymentRequestIntent(body);
-        const req = new PaymentRequest(intent);
-
-
-        return req;
+        return body;
     }
 
-    async toProto() {
-        const { rendezvousKeypair } = this.intent;
-        const { message, signature } = this.intent.sign();
-
-        return new proto.SendMessageRequest({
-            message: {
-                kind: {
-                    case: "requestToReceiveBill",
-                    value: proto.RequestToReceiveBill.fromBinary(Buffer.from(message))
-                }
-            },
-            rendezvousKey: {
-                value: rendezvousKeypair.publicKey,
-            },
-            signature: {
-                value: signature,
-            }
-        });
-    }
+    abstract toProto(): Promise<proto.SendMessageRequest>;
 
     closeStream() {
         this.emitter = null;
@@ -194,7 +176,7 @@ class PaymentRequest {
         // Open the message stream
         msgStream.write(new proto.OpenMessageStreamRequest({
             rendezvousKey: new proto.RendezvousKey({
-                value: rendezvousKeypair.publicKey,
+                value: rendezvousKeypair.getPublicKey().value,
             }),
         }));
 
@@ -227,5 +209,5 @@ class PaymentRequest {
 }
 
 export {
-    PaymentRequest
+    AbstractRequest
 }
