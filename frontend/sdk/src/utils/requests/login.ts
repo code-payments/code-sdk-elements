@@ -26,13 +26,13 @@ class LoginRequest extends AbstractRequest {
 
     async toProto() {
         const { rendezvousKeypair } = this.intent;
-        const { message, signature } = this.intent.sign();
+        const { signedBytes, signature } = this.intent.sign();
 
         return new proto.SendMessageRequest({
             message: {
                 kind: {
                     case: "requestToLogin",
-                    value: proto.RequestToLogin.fromBinary(Buffer.from(message))
+                    value: proto.RequestToLogin.fromBinary(Buffer.from(signedBytes))
                 }
             },
             rendezvousKey: {

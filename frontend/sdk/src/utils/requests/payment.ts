@@ -38,13 +38,13 @@ class PaymentRequest extends AbstractRequest {
 
     async toProto() {
         const { rendezvousKeypair } = this.intent;
-        const { message, signature } = this.intent.sign();
+        const { signedBytes, signature } = this.intent.sign();
 
         return new proto.SendMessageRequest({
             message: {
                 kind: {
                     case: "requestToReceiveBill",
-                    value: proto.RequestToReceiveBill.fromBinary(Buffer.from(message))
+                    value: proto.RequestToReceiveBill.fromBinary(Buffer.from(signedBytes))
                 }
             },
             rendezvousKey: {
