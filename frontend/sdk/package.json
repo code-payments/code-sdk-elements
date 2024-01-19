@@ -14,19 +14,30 @@
   },
   "scripts": {
     "dev": "vite -c ./apps/vite.config.ts --host",
-    "build": "npm run sdk-button:build && npm run sdk-modal-desktop:build && npm run sdk-modal-mobile:build",
     "lib:build": "vite build && vue-tsc --emitDeclarationOnly",
-    "sdk-button:dev": "vite -c ./apps/payment-request-button/vite.config.ts --host",
-    "sdk-button:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-button/vite.config.ts",
-    "sdk-modal-desktop:dev": "vite -c ./apps/payment-request-modal-desktop/vite.config.ts --host",
-    "sdk-modal-desktop:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-modal-desktop/vite.config.ts",
-    "sdk-modal-mobile:dev": "vite -c ./apps/payment-request-modal-mobile/vite.config.ts --host",
-    "sdk-modal-mobile:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-modal-mobile/vite.config.ts"
+
+    "build": "npm run build-payment && npm run build-login",
+    "build-payment": "npm run sdk-payment-button:build && npm run sdk-payment-modal-desktop:build && npm run sdk-payment-modal-mobile:build",
+    "build-login": "npm run sdk-login-button:build && npm run sdk-login-modal-desktop:build && npm run sdk-login-modal-mobile:build",
+
+    "sdk-payment-button:dev": "vite -c ./apps/payment-request-button/vite.config.ts --host",
+    "sdk-payment-button:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-button/vite.config.ts",
+    "sdk-payment-modal-desktop:dev": "vite -c ./apps/payment-request-modal-desktop/vite.config.ts --host",
+    "sdk-payment-modal-desktop:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-modal-desktop/vite.config.ts",
+    "sdk-payment-modal-mobile:dev": "vite -c ./apps/payment-request-modal-mobile/vite.config.ts --host",
+    "sdk-payment-modal-mobile:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/payment-request-modal-mobile/vite.config.ts",
+
+    "sdk-login-button:dev": "vite -c ./apps/login-request-button/vite.config.ts --host",
+    "sdk-login-button:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/login-request-button/vite.config.ts",
+    "sdk-login-modal-desktop:dev": "vite -c ./apps/login-request-modal-desktop/vite.config.ts --host",
+    "sdk-login-modal-desktop:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/login-request-modal-desktop/vite.config.ts",
+    "sdk-login-modal-mobile:dev": "vite -c ./apps/login-request-modal-mobile/vite.config.ts --host",
+    "sdk-login-modal-mobile:build": "npm run lib:build && NODE_ENV=production vite build -c ./apps/login-request-modal-mobile/vite.config.ts"
   },
   "dependencies": {
-    "@code-wallet/events": "^1.0.0",
-    "@code-wallet/library": "^1.0.4",
-    "@code-wallet/rpc": "^1.0.0",
+    "@code-wallet/events": "^1.4.0",
+    "@code-wallet/library": "^1.3.1",
+    "@code-wallet/rpc": "^1.3.1",
     "@bufbuild/connect-web": "^0.8.6",
     "@bugsnag/js": "^7.20.2",
     "@bugsnag/plugin-vue": "^7.19.0",

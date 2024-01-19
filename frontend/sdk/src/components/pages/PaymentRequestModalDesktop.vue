@@ -1,218 +1,80 @@
 <script setup lang="ts">
-import { Ref, onMounted, onUnmounted, ref } from 'vue';
-import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { CodeRequest, CodeSpinner, DownloadAppQR, ErrorMessage } from '../elements';
-import { PaymentRequest, formatCurrency } from "../../utils"
-import { EventChannel, InternalEvents } from "@code-wallet/events";
+import { CodeRequestPayment, CodeSpinner, DownloadAppQR, } from '../elements';
+import { PaymentRequest, formatCurrency,  } from "../../utils"
+import CodeDesktopModal from '../sdk/CodeDesktopModal.vue';
 
 const props = defineProps({
   id: { type: String, required: true, },
   payload: { type: String, required: true, },
 });
 
-const el = ref<HTMLElement | null>(null);
-const channel = new EventChannel<InternalEvents>(props.id);
-const paymentRequest = ref(PaymentRequest.fromPayload(props.payload));
-const clientSecret : Ref<string | undefined> = ref();
-const idempotencyKey : Ref<string | undefined> = ref();
-const successUrl : Ref<string | undefined> = ref();
-const cancelUrl : Ref<string | undefined> = ref();
-
-const open = ref(true);
-const empty = ref(null);
-
-const isLoading = ref(true);
-const showDownloadQr = ref(false);
-const hasScanned = ref(false);
-const hasRejected = ref(false);
-const hasCompletedIntent = ref(false);
-const hasError = ref(false);
-const errMessage = ref("");
-const openedAt = Date.now();
-
-function onDownload() {
-  showDownloadQr.value = !showDownloadQr.value;
+function onDownload(state: { isShowingDownloadQr: boolean; }) {
+  state.isShowingDownloadQr = !state.isShowingDownloadQr;
 }
 
-function onClose() {
-  // Avoid an obscure headlessui Firefox bug where the dialog is closed on open (hard to reproduce)
-  // Source of issue:
-  // https://github.com/tailwindlabs/headlessui/blob/1469b85c36802265c2409f443f926e1bb02230d4/packages/%40headlessui-vue/src/components/dialog/dialog.ts#L280-L287
-
-  if (Date.now() > (openedAt + 100)) {
-    open.value = false;
-    setTimeout(() => { channel.emit('clientRejectedPayment') }, 800);
-  } else {
-    open.value = true;
-  }
+function getFormattedAmount(req: PaymentRequest) {
+  return formatCurrency(req.getAmount()!, req.getCurrency()!);
 }
-
-channel.on("error", (msg) => { hasError.value = true; errMessage.value = `${msg}`;  });
-channel.on("streamTimeout", () => { hasError.value = true; });
-channel.on("streamClosed", () => { hasError.value = true; });
-channel.on("clientRejectedPayment", () => { hasRejected.value = true; });
-channel.on("intentSubmitted", () => { hasCompletedIntent.value = true; });
-channel.on("codeScanned", () => { hasScanned.value = true; });
-
-channel.on("beforeInvoke", () => {
-  isLoading.value = true;
-})
-channel.on("afterInvoke", () => {
-  const shouldRecreateRequest = clientSecret.value || 
-    idempotencyKey.value || 
-    successUrl.value || 
-    cancelUrl.value;
-
-  if (shouldRecreateRequest) {
-    paymentRequest.value = PaymentRequest.fromPayload(props.payload, {
-      clientSecret: clientSecret.value,
-      idempotencyKey: idempotencyKey.value,
-      successUrl: successUrl.value,
-      cancelUrl: cancelUrl.value,
-    });
-  }
-
-  paymentRequest.value.openStream(channel);
-  isLoading.value = false;
-})
-
-channel.on("updatedClientSecret", (args: { value: string }) => {
-  clientSecret.value = args.value;
-});
-channel.on("updatedIdempotencyKey", (args: { value: string }) => {
-  idempotencyKey.value = args.value;
-});
-channel.on("updatedSuccessUrl", (args: { value: string }) => {
-  successUrl.value = args.value;
-});
-channel.on("updatedCancelUrl", (args: { value: string }) => {
-  cancelUrl.value = args.value;
-});
-
-onMounted(() => {
-  // We probably don't have the right info yet to generate the kikcode properly,
-  // however, we can ask the client to do it anyway in order to prefetch and
-  // warm all assets required for showing the kikcode.
-  if (paymentRequest.value && !paymentRequest.value.kikCode) {
-    paymentRequest.value.generateKikCode();
-  }
-});
-
-onUnmounted(() => {
-  if (paymentRequest.value) {
-    paymentRequest.value.closeStream();
-  }
-});
 </script>
 
 <template>
-  <div ref="el">
+  <CodeDesktopModal :create-request="PaymentRequest.fromPayload" 
+    :payload="props.payload" 
+    :id="props.id">
 
-    <TransitionRoot as="template" :show="open">
-      <Dialog as="div" class="relative z-10" @close="onClose" :initialFocus="empty">
+    <template #default="{ state, request }">
 
-        <TransitionChild as="template" 
-          enter="duration-[0ms]" 
-          enter-from="opacity-0" 
-          enter-to="opacity-100"
-          leave="duration-[800ms]" 
-          leave-from="opacity-100" 
-          leave-to="opacity-0">
-          <div class="fixed inset-0 bg-opacity-80 transition-opacity backdrop-blur-sm bg-black" />
-        </TransitionChild>
+      <h2 class="text-white text-[34px] leading-tight
+      font-avenir-next-bold mb-10">
+        Scan with Code App to Pay
+        {{ getFormattedAmount(request as PaymentRequest) }}
+      </h2>
 
-        <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="m-auto relative">
 
-          <TransitionChild as="template" enter="duration-[800ms]" enter-from="opacity-0" enter-to="opacity-100"
-            leave="duration-[800ms]" leave-from="opacity-100" leave-to="opacity-0">
-            <button @click="onClose" type="button"
-              class="absolute right-10 top-10 flex h-14 w-14 items-center justify-center rounded-full bg-black z-100">
-              <XMarkIcon class="h-7 w-7 text-white" aria-hidden="true" />
-            </button>
-          </TransitionChild>
+        <div class="absolute top-[10vh] right-0 max-w-[21vh] mv-right-start"
+          :class="{ 'mv-right-end': state.isShowingDownloadQr }">
 
-          <div class="grid h-screen place-items-center">
-            <TransitionChild as="template" enter="duration-[800ms]"
-              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100" leave="duration-[800ms]"
-              leave-from="opacity-100 translate-y-0 sm:scale-100"
-              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+          <a @click="onDownload(state)" href="https://www.getcode.com/download" target="_blank">
+            <DownloadAppQR v-if="state.isShowingDownloadQr" @complete="onDownload" />
+          </a>
+        </div>
 
+        <div v-show="!state.isLoading" class="mv-left-start delay-800"
+          :class="{ 'invisible': state.hasScanned, 'mv-left-end': state.isShowingDownloadQr, }">
+          <CodeRequestPayment
+            :payload="request.kikCode" 
+            :amount="request.intent.options.amount" 
+            :currency="request.intent.options.currency"
+            class="bounce" />
+        </div>
 
-              <div class="text-center py-[100px]">
-
-                <DialogPanel class="relative transform  transition-all w-full max-w-4xl p-6 mx-auto">
-
-                  <Transition>
-                    <div class="max-w-md m-auto" ref="empty">
-
-                      <div v-if="hasError">
-                        <ErrorMessage :errMessage="errMessage" />
-                      </div>
-
-                      <div v-else class="delay-500">
-                        <h2 class="text-white text-[34px] leading-tight
-                        font-avenir-next-bold mb-10">
-                          Scan with the Code app to pay
-                          {{ formatCurrency(paymentRequest.getAmount()!, paymentRequest.getCurrency()!) }}
-                        </h2>
-
-                        <div class="m-auto relative">
-
-                          <div class="absolute top-[10vh] right-0 max-w-[21vh] mv-right-start"
-                            :class="{ 'mv-right-end': showDownloadQr }">
-
-                            <a @click="onDownload()" href="https://www.getcode.com/download" target="_blank">
-                              <DownloadAppQR v-if="showDownloadQr" @complete="onDownload" />
-                            </a>
-                          </div>
-
-                          <div v-show="!isLoading" class="mv-left-start delay-800"
-                            :class="{ 'invisible': hasScanned, 'mv-left-end': showDownloadQr, }">
-                            <CodeRequest 
-                              :payload="paymentRequest.kikCode" 
-                              :amount="paymentRequest.intent.options.amount" 
-                              :currency="paymentRequest.intent.options.currency"
-                              class="bounce" />
-                          </div>
-
-                          <div v-show="isLoading" class="h-[45.9vh]">
-                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2">
-                              <CodeSpinner class="text-white" />
-                            </div>
-                          </div>
-
-                          <div v-if="hasScanned" class="absolute top-1/2 left-1/2 -translate-x-1/2">
-                            <p class="text-white text-[12px] leading-tight font-avenir-next-bold pb-10">
-                              Confirm payment on Code
-                              <button type="button" @click="hasScanned = false"
-                                class="underline block mt-2 text-center w-full">Need to scan again?</button>
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p class="mt-10 text-white text-[16px] leading-tight font-avenir-next-bold pb-10">
-                            Don’t have the Code app yet?<br>
-                            <button v-if="!showDownloadQr" @click="onDownload()" class="underline">Download Now</button>
-                            <a v-else @click="onDownload()" href="https://www.getcode.com/download" target="_blank" class="underline">Download Now</a>
-                            and get your first $1 free
-                          </p>
-                        </div>
-
-                      </div>
-                    </div>
-                  </Transition>
-
-                </DialogPanel>
-              </div>
-            </TransitionChild>
+        <div v-show="state.isLoading" class="h-[45.9vh]">
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2">
+            <CodeSpinner class="text-white" />
           </div>
         </div>
-      </Dialog>
-    </TransitionRoot>
-  </div>
+
+        <div v-if="state.hasScanned" class="absolute top-1/2 left-1/2 -translate-x-1/2">
+          <p class="text-white text-[12px] leading-tight font-avenir-next-bold pb-10">
+            Confirm payment on Code
+            <button type="button" @click="state.hasScanned = false"
+              class="underline block mt-2 text-center w-full">Need to scan again?</button>
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <p class="mt-10 text-white text-[16px] leading-tight font-avenir-next-bold pb-10">
+          Don’t have the Code app yet?<br>
+          <button v-if="!state.isShowingDownloadQr" @click="onDownload(state)" class="underline">Download Now</button>
+          <a v-else @click="onDownload(state)" href="https://www.getcode.com/download" target="_blank" class="underline">Download Now</a>
+          and get your first $1 free
+        </p>
+      </div>
+
+    </template>
+  </CodeDesktopModal>  
 </template>
 
 <style scoped>
