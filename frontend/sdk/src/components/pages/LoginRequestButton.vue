@@ -10,7 +10,7 @@
 
 <template>
   <CodeButton :id="id" :payload="payload">
-    <CodeLogoSmall class="inline-block w-7 h-7 mr-2" />
+    <CodeLogoSmall class="inline-block w-7 h-7 mr-2 -ml-1" />
     <span class="font-avenir-next-bold text-md inline-block align-middle">
       Login with Code
     </span>

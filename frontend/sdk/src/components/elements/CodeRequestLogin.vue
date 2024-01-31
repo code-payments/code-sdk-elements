@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref, watchEffect } from "vue";
 import { KikCode, KikCodeDescription } from "../../utils/kik";
+import CodeLogo from "./CodeLogo.vue";
 
 const props = defineProps<{
   payload?: Uint8Array,
@@ -33,20 +34,23 @@ watchEffect(() => {
       -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-50"
       :class="{ 'shine': scanned }" />
 
-      <div class="relative m-auto rounded-lg shadow-lg" 
+      <div class="relative m-auto rounded-xl shadow-lg" 
         :style="{
           width: `${ scale * 1 }vh`,
           height: `${ scale * 1.53 }vh`,
           background: '#050505',
           backgroundImage: 'linear-gradient(#050505, #1A1C1D)',
+          boxShadow: '0 0px 0 1px #2B2B2B inset',
         }">
+
+        <CodeLogo class="absolute w-auto h-5 bottom-4 left-4 "/>
 
         <svg v-if="kikcode" class="absolute" 
         viewBox="0 0 220 220"
         :style="{
           width: `${ (kikcode.size.width/320)*scale }vh`,
           height: `${ (kikcode.size.height/320)*scale }vh`,
-          top: `${ scale * 0.40 }vh`,
+          top: `${ scale * 0.44 }vh`,
           left: `${ scale * 0.19 }vh`,
         }">
 
