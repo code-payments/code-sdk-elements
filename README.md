@@ -1,6 +1,6 @@
+Migrated to [@code-wallet/views](https://github.com/code-payments/code-sdk/tree/main/packages/views)
 
 <img width="1280" alt="Code SDK Elements" src="https://github.com/code-payments/code-sdk-elements/assets/623790/987d3a97-453a-446b-bc79-028fb0678b72">
-
 
 # Code SDK Elements
 ![license][license-image]
@@ -10,7 +10,6 @@
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 
 This repository contains the frontend components for the Code SDK [elements](https://www.npmjs.com/package/@code-wallet/elements) package. To learn more about the SDK, please visit [sdk.getcode.com](https://sdk.getcode.com).
-
 
 ## Development
 The codebase is split into the following packages:
